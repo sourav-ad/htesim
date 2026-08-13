@@ -216,6 +216,32 @@ simulate.dgp <- function(object, nsim = 1,
     if (!is.null(nsimtest)) {
       testx <- matrix(runif(nsimtest * dim), nrow = nsimtest, ncol = dim)
     }
+  } else if (object$xmodel == "unif_correlated") {
+    
+    Sigma <- outer(
+      1:dim,
+      1:dim,
+      function(i, j) rho^abs(i - j)
+    )
+    
+    z <- MASS::mvrnorm(
+      n = nsim,
+      mu = rep(0, dim),
+      Sigma = Sigma
+    )
+    
+    x <- pnorm(z)
+    
+    if (!is.null(nsimtest)) {
+      
+      ztest <- MASS::mvrnorm(
+        n = nsimtest,
+        mu = rep(0, dim),
+        Sigma = Sigma
+      )
+      
+      testx <- pnorm(ztest)
+    }
   }
   colnames(x) <- paste("X", 1:ncol(x), sep = "")
 
