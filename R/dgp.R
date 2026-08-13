@@ -48,7 +48,10 @@
 #' model = "normal", xmodel = "normal")
 #'
 #' @export
-dgp <- function(p = 0.5, m = 0, t = 0, sd = 1, ol = 0, model = c("normal", "weibull", "binomial", "polr"), xmodel = c("normal", "unif"), rmvar = NULL) {
+dgp <- function(p = 0.5, m = 0, t = 0, sd = 1, ol = 0, 
+                model = c("normal", "weibull", "binomial", "polr"), 
+                xmodel = c("normal", "unif", "normal_correlated"), 
+                rmvar = NULL) {
 
   cl <- match.call()
 
@@ -140,7 +143,9 @@ sanitize_fct <- function(fct, call) {
 #' head(testdf)
 #'
 #' @export
-simulate.dgp <- function(object, nsim = 1, seed = NULL, dim = 4, nsimtest = NULL, ...) {
+simulate.dgp <- function(object, nsim = 1, 
+                         seed = NULL, dim = 4, 
+                         nsimtest = NULL, rho = 0.5, ...) {
 
   ###  input checks
   checkmate::assertIntegerish(nsim, lower = 1, len = 1, any.missing = FALSE)
@@ -184,7 +189,29 @@ simulate.dgp <- function(object, nsim = 1, seed = NULL, dim = 4, nsimtest = NULL
     if (!is.null(nsimtest)) {
       testx <- matrix(rnorm(nsimtest * dim), nrow = nsimtest, ncol = dim)
     }
-  } else if (object$xmodel == "unif") {
+  } else if (object$xmodel == "normal_correlated"){
+    
+    Sigma <- outer(
+      1:dim,
+      1:dim,
+      function(i, j) rho^abs(i - j)
+    )
+    
+    x <- MASS::mvrnorm(
+      n = nsim,
+      mu = rep(0, dim),
+      Sigma = Sigma
+    )
+    
+    if (!is.null(nsimtest)) {
+      testx <- MASS::mvrnorm(
+        n = nsimtest,
+        mu = rep(0, dim),
+        Sigma = Sigma
+      )
+    }
+    
+  }else if (object$xmodel == "unif") {
     x <- matrix(runif(nsim * dim), nrow = nsim, ncol = dim)
     if (!is.null(nsimtest)) {
       testx <- matrix(runif(nsimtest * dim), nrow = nsimtest, ncol = dim)
