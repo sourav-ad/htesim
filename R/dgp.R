@@ -10,7 +10,7 @@
 #' @param ol (numeric(1)) how much of predictive effect is added to prognostic effect (overlay).
 #' The default is ol = 0 which means that the conditional mean does not depend on treatment effect.
 #' @param model ("normal"|"weibull"|"binomial"|"polr") Name of used model to simulate outcome y.
-#' @param xmodel ("normal") Name of used model to simulate covariates x.
+#' @param xmodel ("normal", "normal_correlated", "unif", or "unif_correlated") Name of used model to simulate covariates x.
 #' @param rmvar (character) Name(s) of variable(s) to be removed after simulation of the training data,
 #' variables names always start with X plus a number, e.g., "X5".
 #' The default NULL means no variable is removed.
@@ -50,7 +50,7 @@
 #' @export
 dgp <- function(p = 0.5, m = 0, t = 0, sd = 1, ol = 0, 
                 model = c("normal", "weibull", "binomial", "polr"), 
-                xmodel = c("normal", "unif", "normal_correlated"), 
+                xmodel = c("normal", "normal_correlated", "unif", "unif_correlated"), 
                 rmvar = NULL) {
 
   cl <- match.call()
@@ -68,7 +68,7 @@ dgp <- function(p = 0.5, m = 0, t = 0, sd = 1, ol = 0,
     })
   xmodel <- tryCatch({match.arg(xmodel)},
     error = function(e) {
-      stop("Assertion on 'xmodel' failed: Must be element of set {'normal', 'unif'}")
+      stop("Assertion on 'xmodel' failed: Must be element of set {'normal', 'normal_correlated', 'unif', 'unif_correlated'}")
     })
 
   pfct <- sanitize_fct(p, cl$p)
